@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Role } from '@prisma/client';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @ApiProperty({ example: 'budi@guru.id' })
@@ -15,4 +16,14 @@ export class RegisterDto {
   @IsString()
   @IsNotEmpty({ message: 'Nama tidak boleh kosong' })
   name: string;
+
+  @ApiPropertyOptional({ enum: Role, example: Role.TEACHER })
+  @IsOptional()
+  @IsEnum(Role)
+  role?: Role;
+
+  @ApiPropertyOptional({ example: 'SMAN 1 Jakarta' })
+  @IsOptional()
+  @IsString()
+  schoolName?: string;
 }

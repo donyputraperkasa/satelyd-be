@@ -28,12 +28,14 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const userRole = dto.role && (dto.role === Role.TEACHER || dto.role === Role.USER) ? dto.role : Role.TEACHER;
     const user = await this.prisma.user.create({
       data: {
         email: dto.email.toLowerCase().trim(),
         password: hashedPassword,
         name: dto.name.trim(),
-        role: Role.USER,
+        role: userRole,
+        schoolName: dto.schoolName?.trim() || null,
         gameTokenBalance: 0,
         examCreditBalance: 0,
       },
@@ -50,6 +52,7 @@ export class AuthService {
         role: user.role,
         gameTokenBalance: user.gameTokenBalance,
         examCreditBalance: user.examCreditBalance,
+        schoolName: user.schoolName,
       },
       accessToken: token,
     };
@@ -86,6 +89,7 @@ export class AuthService {
         role: user.role,
         gameTokenBalance: user.gameTokenBalance,
         examCreditBalance: user.examCreditBalance,
+        schoolName: user.schoolName,
       },
       accessToken: token,
     };

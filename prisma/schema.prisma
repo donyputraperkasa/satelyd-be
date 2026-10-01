@@ -25,6 +25,7 @@ model User {
   password          String
   name              String
   role              Role               @default(USER)
+  schoolName        String?
   gameTokenBalance  Int                @default(0) // Token untuk game (Rp 5.000)
   examCreditBalance Int                @default(0) // Kredit publikasi ujian (Rp 14.900)
   createdAt         DateTime           @default(now())
