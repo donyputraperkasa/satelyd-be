@@ -99,6 +99,12 @@ export class CardItemDto {
   @IsOptional()
   @IsString()
   answerImageUrl?: string;
+
+  @IsOptional()
+  createdAt?: any;
+
+  @IsOptional()
+  updatedAt?: any;
 }
 
 export class CreateDeckDto {
