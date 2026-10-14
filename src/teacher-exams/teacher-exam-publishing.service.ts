@@ -30,9 +30,9 @@ export class TeacherExamPublishingService {
     if (exam.status === 'PUBLISHED') {
       return exam;
     }
-    if (exam.status !== 'DRAFT') {
+    if (exam.status !== 'DRAFT' && exam.status !== 'CLOSED') {
       throw new BadRequestException(
-        'Hanya ujian berstatus draft yang dapat dipublikasikan.',
+        'Hanya ujian berstatus draft atau yang telah ditutup yang dapat dipublikasikan.',
       );
     }
     if (!exam.questions.length) {

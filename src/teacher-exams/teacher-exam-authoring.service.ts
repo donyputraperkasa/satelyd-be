@@ -117,9 +117,9 @@ export class TeacherExamAuthoringService {
   ): Promise<{ message: string }> {
     const exam = await this.access.findOwnedExam(teacherId, examId);
 
-    if (exam.status !== 'DRAFT') {
+    if (exam.status === 'PUBLISHED') {
       throw new BadRequestException(
-        'Hanya ujian berstatus draft yang dapat dihapus.',
+        'Ujian yang sedang aktif tidak dapat dihapus. Tutup sesi terlebih dahulu.',
       );
     }
 

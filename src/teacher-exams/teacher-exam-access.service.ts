@@ -38,7 +38,7 @@ export class TeacherExamAccessService {
 
     const editable =
       exam.status === 'DRAFT' ||
-      (exam.status === 'PUBLISHED' && exam._count.participants === 0);
+      exam._count.participants === 0;
 
     if (!editable) {
       throw new BadRequestException(

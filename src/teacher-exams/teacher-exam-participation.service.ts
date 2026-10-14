@@ -24,8 +24,15 @@ export class TeacherExamParticipationService {
   ) {}
 
   async findPublicExam(shareToken: string) {
-    const exam = await this.prisma.teacherExam.findUnique({
-      where: { shareToken },
+    const cleanToken = shareToken.trim();
+    const exam = await this.prisma.teacherExam.findFirst({
+      where: {
+        OR: [
+          { shareToken: cleanToken },
+          { pin: cleanToken },
+          { pin: cleanToken.toUpperCase() },
+        ],
+      },
       select: {
         id: true,
         title: true,
@@ -72,8 +79,15 @@ export class TeacherExamParticipationService {
     shareToken: string,
     dto: JoinTeacherExamDto,
   ): Promise<TeacherExamParticipant> {
-    const exam = await this.prisma.teacherExam.findUnique({
-      where: { shareToken },
+    const cleanToken = shareToken.trim();
+    const exam = await this.prisma.teacherExam.findFirst({
+      where: {
+        OR: [
+          { shareToken: cleanToken },
+          { pin: cleanToken },
+          { pin: cleanToken.toUpperCase() },
+        ],
+      },
     });
 
     if (
@@ -87,7 +101,7 @@ export class TeacherExamParticipationService {
       throw new NotFoundException('Ujian tidak ditemukan atau sudah ditutup.');
     }
 
-    if (exam.pin !== dto.pin.trim()) {
+    if (exam.pin.toUpperCase() !== dto.pin.trim().toUpperCase() && exam.shareToken !== dto.pin.trim()) {
       throw new UnauthorizedException('PIN ujian tidak sesuai.');
     }
 
