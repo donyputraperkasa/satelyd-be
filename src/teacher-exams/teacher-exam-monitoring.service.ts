@@ -101,19 +101,41 @@ export class TeacherExamMonitoringService {
     }
 
     const participant = await this.prisma.teacherExamParticipant.findFirst({
-      where: { id: participantId, examId },
+      where: {
+        examId,
+        OR: [{ id: participantId }, { participantToken: participantId }],
+      },
     });
     if (!participant) {
       throw new NotFoundException('Peserta tidak ditemukan.');
-    }
-    if (participant.status !== 'BLOCKED') {
-      throw new BadRequestException('Peserta ini tidak sedang diblokir.');
     }
 
     return this.prisma.teacherExamParticipant.update({
       where: { id: participant.id },
       data: {
         status: 'IN_PROGRESS',
+        violationCount: 0,
+        blockedAt: null,
+        blockReason: null,
+        lastActivityAt: new Date(),
+      },
+    });
+  }
+
+  async unblockAllParticipants(teacherId: string, examId: string) {
+    const exam = await this.access.findOwnedExam(teacherId, examId);
+    if (exam.status !== 'PUBLISHED') {
+      throw new BadRequestException('Ujian sudah tidak aktif.');
+    }
+
+    return this.prisma.teacherExamParticipant.updateMany({
+      where: {
+        examId,
+        status: { in: ['BLOCKED', 'IN_PROGRESS'] },
+      },
+      data: {
+        status: 'IN_PROGRESS',
+        violationCount: 0,
         blockedAt: null,
         blockReason: null,
         lastActivityAt: new Date(),

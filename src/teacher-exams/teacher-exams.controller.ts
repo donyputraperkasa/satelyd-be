@@ -246,6 +246,20 @@ export class TeacherExamsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.TEACHER, Role.ADMIN, Role.USER)
   @ApiBearerAuth()
+  @Patch(':examId/participants/unblock-all')
+  @ApiOperation({
+    summary: 'Unblock all students (Buka Kunci Semua Siswa Sekaligus)',
+  })
+  unblockAllParticipants(
+    @CurrentUser('sub') userId: string,
+    @Param('examId') examId: string,
+  ) {
+    return this.teacherExamsService.unblockAllParticipants(userId, examId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.TEACHER, Role.ADMIN, Role.USER)
+  @ApiBearerAuth()
   @Patch(':examId/participants/:participantId/unblock')
   @ApiOperation({
     summary: 'Unblock a student (Buka Blokir Siswa Terkena Auto-Block)',
@@ -320,7 +334,10 @@ export class TeacherExamsController {
     summary:
       'Finalize and submit exam (Kumpulkan Ujian & Hitung Nilai Otomatis)',
   })
-  submitExam(@Param('participantToken') participantToken: string) {
-    return this.teacherExamsService.submitExam(participantToken);
+  submitExam(
+    @Param('participantToken') participantToken: string,
+    @Body() body?: { answers?: Record<string, string> },
+  ) {
+    return this.teacherExamsService.submitExam(participantToken, body);
   }
 }

@@ -116,8 +116,11 @@ export class TeacherExamsService {
     return this.participation.saveAnswer(participantToken, dto);
   }
 
-  submitExam(participantToken: string): Promise<TeacherExamParticipant> {
-    return this.participation.submit(participantToken);
+  submitExam(
+    participantToken: string,
+    dto?: { answers?: Record<string, string> },
+  ): Promise<TeacherExamParticipant> {
+    return this.participation.submit(participantToken, dto);
   }
 
   recordEvent(
@@ -149,5 +152,9 @@ export class TeacherExamsService {
 
   unblockParticipant(teacherId: string, examId: string, participantId: string) {
     return this.monitoring.unblockParticipant(teacherId, examId, participantId);
+  }
+
+  unblockAllParticipants(teacherId: string, examId: string) {
+    return this.monitoring.unblockAllParticipants(teacherId, examId);
   }
 }

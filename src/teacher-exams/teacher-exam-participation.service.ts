@@ -180,7 +180,13 @@ export class TeacherExamParticipationService {
     }
 
     const selectedOption = dto.selectedOptionId
-      ? question.options.find((opt) => opt.id === dto.selectedOptionId)
+      ? question.options.find(
+          (opt) =>
+            opt.id === dto.selectedOptionId ||
+            (dto.selectedOptionId &&
+              opt.label.trim().toUpperCase() ===
+                dto.selectedOptionId.trim().toUpperCase()),
+        )
       : undefined;
 
     if (dto.selectedOptionId && !selectedOption) {
@@ -234,12 +240,19 @@ export class TeacherExamParticipationService {
     });
   }
 
-  async submit(participantToken: string): Promise<TeacherExamParticipant> {
+  async submit(
+    participantToken: string,
+    dto?: { answers?: Record<string, string> },
+  ): Promise<TeacherExamParticipant> {
     const participant = await this.prisma.teacherExamParticipant.findUnique({
       where: { participantToken },
       include: {
         exam: {
-          include: { questions: { select: { id: true } } },
+          include: {
+            questions: {
+              include: { options: true },
+            },
+          },
         },
         answers: true,
       },
@@ -248,10 +261,49 @@ export class TeacherExamParticipationService {
     if (!participant) {
       throw new NotFoundException('Peserta tidak ditemukan.');
     }
-    if (participant.status !== 'IN_PROGRESS') {
-      throw new BadRequestException(
-        'Ujian sudah dikumpulkan atau peserta telah diblokir.',
-      );
+    if (participant.status === 'SUBMITTED') {
+      return participant;
+    }
+
+    // Jika siswa mengirimkan seluruh jawaban saat submit, simpan/sinkronkan ke database
+    if (dto?.answers && typeof dto.answers === 'object') {
+      for (const question of participant.exam.questions) {
+        const optionKey = dto.answers[question.id];
+        if (!optionKey) continue;
+
+        const selectedOption = question.options.find(
+          (opt) =>
+            opt.id === optionKey ||
+            opt.label.trim().toUpperCase() === optionKey.trim().toUpperCase(),
+        );
+
+        if (selectedOption) {
+          const existing = participant.answers.find(
+            (a) => a.questionId === question.id,
+          );
+          if (existing) {
+            await this.prisma.teacherExamAnswer.update({
+              where: { id: existing.id },
+              data: {
+                selectedOptionId: selectedOption.id,
+                isCorrect: selectedOption.isCorrect,
+              },
+            });
+            existing.selectedOptionId = selectedOption.id;
+            existing.isCorrect = selectedOption.isCorrect;
+          } else {
+            const created = await this.prisma.teacherExamAnswer.create({
+              data: {
+                participantId: participant.id,
+                questionId: question.id,
+                selectedOptionId: selectedOption.id,
+                isCorrect: selectedOption.isCorrect,
+              },
+            });
+            participant.answers.push(created);
+          }
+        }
+      }
     }
 
     const totalQuestions = participant.exam.questions.length;
