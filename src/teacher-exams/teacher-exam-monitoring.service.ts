@@ -43,14 +43,19 @@ export class TeacherExamMonitoringService {
       orderBy: { startedAt: 'asc' },
     });
 
-    return participants.map(({ answers, ...participant }) => {
-      if (participant.status === 'SUBMITTED') return participant;
+    const totalQuestions = await this.prisma.teacherExamQuestion.count({
+      where: { examId },
+    });
 
+    return participants.map(({ answers, ...participant }) => {
       const answered = answers.filter((a) => a.selectedOptionId !== null);
       const correctAnswers = answered.filter((a) => a.isCorrect).length;
 
       return {
         ...participant,
+        answeredQuestions: answered.length,
+        unansweredQuestions: Math.max(0, totalQuestions - answered.length),
+        totalQuestions,
         correctAnswers,
         wrongAnswers: answered.length - correctAnswers,
       };
