@@ -52,6 +52,22 @@ export class TeacherExamParticipationService {
             className: true,
           },
         },
+        questions: {
+          select: {
+            id: true,
+            order: true,
+            question: true,
+            imageUrl: true,
+            options: {
+              select: {
+                id: true,
+                label: true,
+                text: true,
+              },
+            },
+          },
+          orderBy: { order: 'asc' },
+        },
         _count: { select: { questions: true } },
       },
     });
