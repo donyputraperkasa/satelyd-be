@@ -137,7 +137,7 @@ model GameCard {
   question        String
   answer          String
   hint            String?
-  imageUrl        String?   @db.VarChar(500)
+  imageUrl        String?   @db.Text
   durationSeconds Int       @default(30)
   order           Int       @default(0)
   createdAt       DateTime  @default(now())
@@ -240,7 +240,7 @@ model TeacherExamQuestion {
   question    String
   explanation String?
   order       Int
-  imageUrl    String?                     @db.VarChar(500)
+  imageUrl    String?                     @db.Text
   createdAt   DateTime                    @default(now())
   updatedAt   DateTime                    @updatedAt
 

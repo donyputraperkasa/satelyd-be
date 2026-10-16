@@ -135,9 +135,12 @@ export class TeacherExamAuthoringService {
     await this.access.ensureExamEditable(teacherId, examId);
     this.ensureSingleCorrectOption(dto);
 
-    const questionCount = await this.prisma.teacherExamQuestion.count({
+    const lastQuestion = await this.prisma.teacherExamQuestion.findFirst({
       where: { examId },
+      orderBy: { order: 'desc' },
+      select: { order: true },
     });
+    const nextOrder = (lastQuestion?.order ?? 0) + 1;
 
     return this.prisma.teacherExamQuestion.create({
       data: {
@@ -145,7 +148,7 @@ export class TeacherExamAuthoringService {
         question: dto.question,
         imageUrl: dto.imageUrl,
         explanation: dto.explanation,
-        order: questionCount + 1,
+        order: nextOrder,
         options: { create: this.mapOptions(dto) },
       },
       include: { options: true },
