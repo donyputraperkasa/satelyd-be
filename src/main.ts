@@ -1,11 +1,17 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { json, urlencoded } from 'express';
 import type { Express } from 'express';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // Matikan bodyParser bawaan (default 100kb) agar dapat mengatur limit payload kustom
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
+
+  // Naikkan limit JSON dan URL-encoded body parser menjadi 50MB (mencegah HTTP 413)
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ extended: true, limit: '50mb' }));
 
   // Railway/Proxy meneruskan protokol publik melalui X-Forwarded-Proto.
   // Ini memastikan URL upload yang dikembalikan API tetap memakai HTTPS.
